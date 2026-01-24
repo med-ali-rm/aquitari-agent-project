@@ -16,7 +16,7 @@ It is still a work in progress and will be updated until completion.
 ---
 
 ## Identity
-- **App Name (Brand):** Aquitari  
+- **App Name :** Aquitari Vita Agent  
 - **AI Agent:** Vita (Aquitari Agent)  
 
 ---
