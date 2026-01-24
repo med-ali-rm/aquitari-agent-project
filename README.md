@@ -15,6 +15,12 @@ It is still a work in progress and will be updated until completion.
 
 ---
 
+## Disclaimer
+
+Note: Aquitari provides wellness guidance and is not a substitute for professional medical or financial advice.
+
+---
+
 ## Identity
 - **App Name (Brand):** Aquitari  
 - **AI Agent:** Vita (Aquitari Agent)  
