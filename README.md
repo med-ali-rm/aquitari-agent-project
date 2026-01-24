@@ -1,5 +1,5 @@
 
-# Aquitari
+# Aquitari Vita Agent
 
 This project is being built for **Commit To Change: An AI Agents Hackathon**.  
 It is still a work in progress and will be updated until completion.  
