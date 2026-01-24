@@ -1,0 +1,77 @@
+{
+  "nodes": [
+    {
+      "id": "low_rest",
+      "type": "system_state",
+      "description": "Daily state triggered by less than 6 hours of sleep",
+      "note": "Consider tracking sleep quality as well"
+    },
+    {
+      "id": "elevated_cortisol",
+      "type": "physiological_marker",
+      "description": "Increased stress-related physiological load"
+    },
+    {
+      "id": "executive_fatigue",
+      "type": "cognitive_condition",
+      "description": "Reduced impulse control and logical decision-making capacity"
+    },
+    {
+      "id": "high_velocity_spending",
+      "type": "behavioral_risk",
+      "description": "Rapid, unplanned financial outflows driven by emotional state"
+    },
+    {
+      "id": "safe_mode",
+      "type": "protection_state",
+      "description": "Restrictive operational mode limiting actions and spending"
+    },
+    {
+      "id": "reserve_buffer",
+      "type": "system_metric",
+      "description": "Minimum protected liquidity threshold for financial safety"
+    },
+    {
+      "id": "hydration_level",
+      "type": "physiological_marker",
+      "description": "Body water balance affecting cognitive function"
+    }
+  ],
+  "edges": [
+    {
+      "source": "low_rest",
+      "target": "elevated_cortisol",
+      "relation": "TRIGGERS"
+    },
+    {
+      "source": "elevated_cortisol",
+      "target": "executive_fatigue",
+      "relation": "INDUCES"
+    },
+    {
+      "source": "executive_fatigue",
+      "target": "high_velocity_spending",
+      "relation": "PREDICTS"
+    },
+    {
+      "source": "low_rest",
+      "target": "safe_mode",
+      "relation": "ACTIVATES"
+    },
+    {
+      "source": "safe_mode",
+      "target": "high_velocity_spending",
+      "relation": "MITIGATES"
+    },
+    {
+      "source": "safe_mode",
+      "target": "reserve_buffer",
+      "relation": "PROTECTS"
+    },
+    {
+      "source": "hydration_level",
+      "target": "executive_fatigue",
+      "relation": "INFLUENCES"
+    }
+  ]
+}
