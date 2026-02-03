@@ -129,9 +129,8 @@ The Aquitari Vital Agent uses a dynamic knowledge graph to link causes, exacerba
 - Relationships evolve over time based on user input and detected patterns.  
 - This ensures the agent’s guidance improves continuously, adapting to changing stress and spending behaviors.
 - You can **visualize the knowledge graph** by running the script:
-```bash
-python visualize_your_knowledge_graph.py
 
+python visualize_your_knowledge_graph.py
 
 ---
 
