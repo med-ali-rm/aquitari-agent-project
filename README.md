@@ -164,7 +164,6 @@ I am happy to have participated in this challenge — it was my first hackathon,
 
 Thanks also to **n8n** and **Opik**, which provided the backbone for workflow orchestration and observability in this project.  
 
-In the end, thank you all.  
 
 ⚠️ **Final Note:** Aquitari Vita Agent is designed to guide wellness and resilience, but it is not a substitute for professional medical or financial advice.  
 Shared under the MIT License to encourage learning, collaboration, and future growth.
