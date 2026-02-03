@@ -1,0 +1,18 @@
+# requirements.txt
+# This file lists all external Python libraries needed to run the Aquitari Agent project.
+# Judges or developers can install them with: pip install -r requirements.txt
+# Standard libraries (os, json, datetime, threading, etc.) are NOT included here.
+
+flet                # UI framework for building the app interface
+requests            # For making HTTP requests
+opik                # Observation/monitoring library
+python-dotenv       # Load environment variables from .env files
+scikit-learn        # Machine learning utilities (TF-IDF, cosine similarity)
+sentence-transformers # Embedding models for semantic similarity
+networkx            # Graph operations and knowledge graph handling
+watchdog            # File system monitoring (auto-update triggers)
+uvicorn             # ASGI server for running FastAPI
+fastapi             # Web framework for APIs
+pydantic            # Data validation and request/response models
+redis               # In-memory data store / caching
+matplotlib          # Visualization (graph plotting, charts)

@@ -1,0 +1,718 @@
+{
+  "name": "ai_agent_\"Vital\"",
+  "nodes": [
+    {
+      "parameters": {
+        "toolDescription": "Makes an HTTP request and returns the response data\nThis HTTP tool connects the Main Agent to the Aquitari Core API, also called \"The Brain.\"  \nIt is used to query the deterministic Knowledge Graph for structured reasoning.  \nWhen the Main Agent sends a state (such as \"low_rest\" or \"impulsive_spending\"), the API returns a **DiagnoseResponse** object with four fields:  \n\n- **entity** → the identifier of who or what the state belongs to (e.g., \"user\").  \n- **state** → the state that was analyzed (e.g., \"low_rest\").  \n- **timestamp** → the exact time the diagnosis was generated.  \n- **diagnosis** → a structured result containing risks and recommended protocols.  \n\n",
+        "method": "POST",
+        "url": "http://host.docker.internal:8000/diagnose",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('JSON', ``, 'json') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.3,
+      "position": [
+        3696,
+        1408
+      ],
+      "id": "80f9eed1-2129-4189-9349-f654cea5222e",
+      "name": "Knowledge Graph"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "38fa487d-0d58-4237-a5a3-a3d03485ba92",
+                    "leftValue": "={{ $json.body.chat.message }}",
+                    "rightValue": "empty",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "no_message "
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "44d2efa0-d547-4c84-b3b4-f2ba93543327",
+                    "leftValue": "={{ $json.body.chat.message }}",
+                    "rightValue": "empty",
+                    "operator": {
+                      "type": "string",
+                      "operation": "notEquals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "there_is_message "
+            }
+          ]
+        },
+        "options": {
+          "ignoreCase": false,
+          "allMatchingOutputs": true
+        }
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        2976,
+        1344
+      ],
+      "id": "dfbd399b-9fad-4314-83b7-55747e3535a7",
+      "name": "check_message_received",
+      "retryOnFail": true,
+      "maxTries": 2,
+      "onError": "continueRegularOutput",
+      "notes": "Error Handling Note:\nThis node uses \"On Error: Continue\" so the workflow won’t stop if the request fails. \nTo see the real error output for debugging, disable this option.\n"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "bc3f9a8a-e00c-49b6-817f-807049850c55",
+              "leftValue": "={{ $json.body.chat.new_day }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {
+          "ignoreCase": false
+        }
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        2352,
+        1328
+      ],
+      "id": "ed89344c-25c9-44d8-8f60-bb9fdf373cc2",
+      "name": "If_to_Check_New_Day",
+      "alwaysOutputData": false,
+      "retryOnFail": true,
+      "maxTries": 2,
+      "onError": "continueRegularOutput",
+      "notes": "Error Handling Note:\nThis node uses \"On Error: Continue\" so the workflow won’t stop if the request fails. \nTo see the real error output for debugging, disable this option.\n"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        4384,
+        1216
+      ],
+      "id": "c89d922e-bbe9-4525-b826-6288d634c2fb",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "operation": "publish",
+        "channel": "feedback_channel",
+        "messageData": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Data', ``, 'string') }}"
+      },
+      "type": "n8n-nodes-base.redisTool",
+      "typeVersion": 1,
+      "position": [
+        4208,
+        1568
+      ],
+      "id": "8d7692d9-68ac-49fa-9938-64b74fc5058f",
+      "name": "<Redis>Today_feedback_History",
+      "credentials": {
+        "redis": {
+          "id": "E2uC9cda0EVEWGfw",
+          "name": "Redis account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "feedback_subagent_memory",
+        "contextWindowLength": 50
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryRedisChat",
+      "typeVersion": 1.5,
+      "position": [
+        4032,
+        1568
+      ],
+      "id": "16d81051-8169-4de3-ac63-1fae3ab6c699",
+      "name": "feedback_subagent_memory",
+      "credentials": {
+        "redis": {
+          "id": "E2uC9cda0EVEWGfw",
+          "name": "Redis account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "main_agent_Chat_Memory",
+        "contextWindowLength": 100
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryRedisChat",
+      "typeVersion": 1.5,
+      "position": [
+        3520,
+        1408
+      ],
+      "id": "065991e1-914e-4f05-99e8-fe6ff9828e92",
+      "name": "main_agent_Chat_Memory",
+      "credentials": {
+        "redis": {
+          "id": "E2uC9cda0EVEWGfw",
+          "name": "Redis account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "key": "main_agent_Chat_Memory"
+      },
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        2576,
+        1104
+      ],
+      "id": "ae74c241-6519-41c2-ae80-5d80e3a30beb",
+      "name": "<Redis>Clear_main_agent_Chat_Memory",
+      "credentials": {
+        "redis": {
+          "id": "E2uC9cda0EVEWGfw",
+          "name": "Redis account"
+        }
+      },
+      "onError": "continueRegularOutput",
+      "notes": "Error Handling Note:\nThis node uses \"On Error: Continue\" so the workflow won’t stop if the request fails. \nTo see the real error output for debugging, disable this option.\n"
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "key": "feedback_subagent_memory"
+      },
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        2768,
+        1104
+      ],
+      "id": "e7fad79b-184a-415e-a8c5-8f5462f667bd",
+      "name": "<Redis>Clear_feedback_subagent_memory",
+      "credentials": {
+        "redis": {
+          "id": "E2uC9cda0EVEWGfw",
+          "name": "Redis account"
+        }
+      },
+      "onError": "continueRegularOutput",
+      "notes": "Error Handling Note:\nThis node uses \"On Error: Continue\" so the workflow won’t stop if the request fails. \nTo see the real error output for debugging, disable this option.\n"
+    },
+    {
+      "parameters": {
+        "toolDescription": "The Feedback_SubAgent is Aquitari’s silent archivist and graph‑keeper.  \nIt listens only to the Main Agent, capturing important insights and transforming them into structured actions for the Knowledge Graph.  \nIts role is purely technical: it checks its own memory to avoid duplicates, and writes clean JSON instructions into Redis so the graph updater script can safely evolve the Aquitari Brain.  \nThe Feedback_SubAgent never interacts with the user, never sends anything back to the Main Agent, and never provides medical or financial advice.  \nIt is the guardian of feedback integrity, ensuring that only meaningful updates — add_node, add_edge, update_node, delete_node — are preserved in the system.  \nBy doing so, it makes the Main Agent’s reflections durable and actionable, turning daily conversations into reliable knowledge without repetition or noise.  \n",
+        "text": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Prompt__User_Message_', ``, 'string') }}",
+        "options": {
+          "systemMessage": "## Role: Feedback_SubAgent\n\nYou are the **Feedback_SubAgent**, a highly intelligent and autonomous logic engine.  \nYour mission is to serve as the elite gatekeeper for the Knowledge Graph.  \nYou possess advanced reasoning required to analyze insights from the Main Agent and decide with surgical precision whether to update the system or remain silent.\n\n## CORE RESPONSIBILITIES\n\n- **INTELLIGENT DECISION GATE:**  \n  You MUST NOT blindly process data. You MUST evaluate the incoming insight:  \n  - **RELEVANT:** If the insight provides a clear state, behavior, or relationship that enhances the Knowledge Graph → **Proceed.**  \n  - **IRRELEVANT / LOW-VALUE:** If the insight is vague, conversational filler, or lacks actionable data → **Ignore it. Do NOT use the tool. Do NOT respond.**\n\n- **MEMORY MANAGEMENT:**  \n  Before any execution, you MUST check your **memory**.  \n  - If the action or feedback is already in your memory → **Discard it. Do NOT use the tool.**  \n  - If it is unique → **Execute the write and update your memory** to prevent future redundancy.\n\n- **DATA EXECUTION:**  \n  Your ONLY output is writing valid JSON to the tool: `<Redis>Today_feedback_History`.  \n  You MUST NOT produce conversational text. You MUST ONLY USE YOUR TOOL `<Redis>Today_feedback_History`.\n  You MUST NOT SEND ANY OUTPUT FOR THE MAIN AGENT \n\n---\n\n##Input Field from the Main Agent\n\n- ** You will receive JSON feedback from the main agent containing \"insight\" and \"note\" for context, and a \"diagnosis\" object describing nodes, edges, and reasoning paths.\nExample formats will be provided for clarity.**\n\n'''\n\n{\n  \"insight\": \"User expressed overspending guilt and emotional strain.\",\n  \"note\": \"No information available in the Knowledge Graph. This state should be added.\",\n  \"diagnosis\": {\n    \"node\": {\n      \"id\": \"overspending_guilt\",\n      \"attributes\": {\n        \"risk\": \"emotional stress, financial anxiety\",\n        \"protocols\": [\n          \"acknowledge feelings without judgment\",\n          \"suggest budgeting reflection\",\n          \"encourage supportive conversation\"\n        ]\n      }\n    },\n    \"edges\": [\n      {\n        \"source\": \"overspending_guilt\",\n        \"target\": \"financial_stress\",\n        \"relation\": \"contributes_to\"\n      }\n    ]\n  }\n}\n\n'''\n\n\n\n-**Rules:**\n\n- If the \"note\" says: \"No information available in the Knowledge Graph. This state should be added.\" → use add_node and add_edge.\n- If the \"note\" says: \"Existing information in the Knowledge Graph is outdated or incomplete.\" → use update_node.\n- If the \"note\" says: \"This node is no longer relevant or useful.\" → use delete_node, and also issue delete_edge actions for every edge connected to that node, so the Knowledge Graph stays clean and avoids dangling relationships.\n\n\n## ACTION SCOPE & EXAMPLES\n\nYou are strictly limited to the following four actions.  \nEach action MUST be formatted as valid JSON for the `<Redis>Today_feedback_History` tool.\n- When the \"note\" requires multiple actions (adding a node and edges, updating attributes, deleting a node and its edges), \n  you must output a single JSON object containing an \"actions\" array. \n  Each element in the array must be one of the valid actions:\n  (add_node, add_edge, update_node, delete_node, delete_edge).\n\n- DO NOT SEND MULTIPLE TOOL CALLS. Always bundle them into one JSON with \"actions\".\n\n Examples\n\n- **Add Node + Edges\n\n'''\n\n\n{\n  \"actions\": [\n    {\n      \"action\": \"add_node\",\n      \"node\": {\n        \"id\": \"financial_anxiety_hopelessness\",\n        \"attributes\": {\n          \"risk\": \"emotional paralysis, avoidance of financial tasks, increased stress-related health issues\",\n          \"protocols\": [\n            \"acknowledge emotions first—validate feelings before action\",\n            \"break tasks into micro-steps\",\n            \"encourage contact with a trusted friend or financial counselor\",\n            \"suggest grounding techniques\",\n            \"remind user that small steps still move them forward\"\n          ]\n        }\n      }\n    },\n    {\n      \"action\": \"add_edge\",\n      \"edge\": {\n        \"source\": \"financial_anxiety_hopelessness\",\n        \"target\": \"focus_level\",\n        \"relation\": \"severely_reduces\"\n      }\n    },\n    {\n      \"action\": \"add_edge\",\n      \"edge\": {\n        \"source\": \"financial_anxiety_hopelessness\",\n        \"target\": \"budget_health\",\n        \"relation\": \"strains\"\n      }\n    }\n  ]\n}\n\n'''\n\n- **Update Node + Reconnect Edges\n\n'''\n\n{\n  \"actions\": [\n    {\n      \"action\": \"update_node\",\n      \"node\": {\n        \"id\": \"financial_anxiety_hopelessness\",\n        \"attributes\": {\n          \"risk\": \"updated emotional paralysis\",\n          \"protocols\": [\n            \"new protocol step 1\",\n            \"new protocol step 2\"\n          ]\n        }\n      }\n    },\n    {\n      \"action\": \"add_edge\",\n      \"edge\": {\n        \"source\": \"financial_anxiety_hopelessness\",\n        \"target\": \"chill_level\",\n        \"relation\": \"depletes\"\n      }\n    }\n  ]\n}\n\n'''\n\n- **Delete Node + Connected Edges\n\n\n'''\n\n{\n  \"actions\": [\n    {\n      \"action\": \"delete_node\",\n      \"node\": {\n        \"id\": \"financial_anxiety_hopelessness\"\n      }\n    },\n    {\n      \"action\": \"delete_edge\",\n      \"edge\": {\n        \"source\": \"financial_anxiety_hopelessness\",\n        \"target\": \"focus_level\",\n        \"relation\": \"severely_reduces\"\n      }\n    },\n    {\n      \"action\": \"delete_edge\",\n      \"edge\": {\n        \"source\": \"financial_anxiety_hopelessness\",\n        \"target\": \"budget_health\",\n        \"relation\": \"strains\"\n      }\n    }\n  ]\n}\n\n\n'''\n\n\n\n\n'''\n\n---\n\n- **Error Handling and Fallback Guidelines:**\n\n- ***If a tool fails or returns an error object:\n\n  - Do not stop the workflow.\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agentTool",
+      "typeVersion": 3,
+      "position": [
+        3872,
+        1392
+      ],
+      "id": "5b16c3ae-5dd6-4e8e-b8c6-330007d5cf06",
+      "name": "Feedback_SubAgent"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={\n  \"commande\": {\n    \"user_in_app\": true,\n    \"is_communicating\": false,\n    \"event_type\": {{ $json.body.chat.event_type }},\n    \"state\": {\n      \"budget\": {{ $json.body.chat.budget }},\n      \"spent\": {{ $json.body.chat.spent }},\n      \"sleep\":{{ $json.body.chat.sleep }} ,\n      \"new_day\": {{ $json.body.chat.new_day }},\n      \"focus_level\": {{ $json.body.chat.focus_level }},\n      \"chill_level\": {{ $json.body.chat.chill_level }},\n      \"budget_health\":{{ $json.body.chat.budget_health }}\n    }\n  }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        3152,
+        1120
+      ],
+      "id": "bc055bb3-4c12-4e5d-9840-aa862639d5da",
+      "name": "Wake_Up_Command_Builder",
+      "retryOnFail": true,
+      "onError": "continueRegularOutput",
+      "notes": "Error Handling Note:\nThis node uses \"On Error: Continue\" so the workflow won’t stop if the request fails. \nTo see the real error output for debugging, disable this option.\n"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get the raw output string\nlet rawOutput = $input.first().json.output;\n\n// If the output starts with ```json, remove the code fences\nif (typeof rawOutput === \"string\" && rawOutput.trim().startsWith(\"```\")) {\n  // Remove all ``` lines\n  let lines = rawOutput.trim().split(\"\\n\");\n  rawOutput = lines.filter(line => !line.trim().startsWith(\"```\")).join(\"\\n\");\n}\n\n// Try to parse JSON if possible\nlet parsedOutput;\ntry {\n  parsedOutput = JSON.parse(rawOutput);\n} catch (e) {\n  // Fallback: keep as string if parsing fails\n  parsedOutput = rawOutput;\n}\n\nreturn {\n  thread_id: $('chat_Webhook').first().json.body.thread_id, // lifts thread_id to top level\n  output: parsedOutput // now clean JSON object instead of fenced string\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4208,
+        1216
+      ],
+      "id": "508b1146-af83-4914-9e29-14df44a3c2ec",
+      "name": "Validate_Agent_Reply",
+      "onError": "continueRegularOutput",
+      "notes": "Error Handling Note:\nThis node uses \"On Error: Continue\" so the workflow won’t stop if the request fails. \nTo see the real error output for debugging, disable this option.\n"
+    },
+    {
+      "parameters": {
+        "content": "memory rest ",
+        "height": 656,
+        "width": 672,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2256,
+        1056
+      ],
+      "id": "3703fb4d-e392-4d00-a0db-de167002e15f",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "prepare input",
+        "height": 656,
+        "width": 368,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2928,
+        1056
+      ],
+      "id": "70bd3483-af3f-468f-901c-d0369a8ec6e3",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "content": "feedback subagent ",
+        "height": 352,
+        "width": 752,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        3808,
+        1360
+      ],
+      "id": "4a54e183-c9e4-488e-9a41-60420e591c97",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "content": "output ",
+        "height": 304,
+        "width": 400,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        4160,
+        1056
+      ],
+      "id": "e52ecb6e-165e-43f0-a09e-f72bd2a52143",
+      "name": "Sticky Note5"
+    },
+    {
+      "parameters": {
+        "content": "main agent # vita agent",
+        "height": 656,
+        "width": 880,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        3296,
+        1056
+      ],
+      "id": "e316fd4e-f1b7-4dd5-8cf1-f399c7764483",
+      "name": "Sticky Note6"
+    },
+    {
+      "parameters": {
+        "content": "input reception ",
+        "height": 656,
+        "width": 368,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2144,
+        1056
+      ],
+      "id": "a42911bd-e5d4-4698-8f59-7cf141fb30f3",
+      "name": "Sticky Note7"
+    },
+    {
+      "parameters": {
+        "content": "*****EVERY_NEW_DAY_IS_A_FRESH_PAGE *******\n DESCRIPTION :AI assistant that bridges mental well‑being with financial health. Aquitari’s agent spots risks like impulsive spending and offers direct, actionable Zen commands to restore calm and financial balance. (Note: Aquitari provides wellness guidance and is not a substitute for professional medical or financial advice)\n",
+        "height": 80,
+        "width": 2416,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2144,
+        976
+      ],
+      "id": "76adc9f6-1947-4489-b8f9-d9738026f530",
+      "name": "Sticky Note8"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "ai-agent-vita-chat-state",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        2192,
+        1328
+      ],
+      "id": "c22f62d4-8795-4ebc-bfc2-1fd952bc52ed",
+      "name": "chat_Webhook",
+      "webhookId": "9bffcb3f-33e3-46c0-9b5a-d77bfd563f7d"
+    },
+    {
+      "parameters": {
+        "model": "mistral-large-latest",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatMistralCloud",
+      "typeVersion": 1,
+      "position": [
+        3360,
+        1408
+      ],
+      "id": "ab2ebedc-f9e6-4f6c-9801-2df3db836437",
+      "name": "Mistral Cloud Chat Model",
+      "credentials": {
+        "mistralCloudApi": {
+          "id": "8O1DGNO6ZhYss6J7",
+          "name": "Mistral Cloud account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "mistral-large-latest",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatMistralCloud",
+      "typeVersion": 1,
+      "position": [
+        3872,
+        1568
+      ],
+      "id": "28e6ffe5-76b4-4d7a-8673-6c24ff7405e4",
+      "name": "Mistral Cloud Chat Model1",
+      "credentials": {
+        "mistralCloudApi": {
+          "id": "8O1DGNO6ZhYss6J7",
+          "name": "Mistral Cloud account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "outputFieldName": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Output_Field_Name', ``, 'string') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dateTimeTool",
+      "typeVersion": 2,
+      "position": [
+        4128,
+        1392
+      ],
+      "id": "ddae0af0-69b4-4008-aa05-2c7d57e171bd",
+      "name": "Date & Time"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.body || $json.commande }}",
+        "options": {
+          "systemMessage": "# Role: Aquitari (Main Agent)\n\nYou are **Aquitari**, a highly intelligent and empathetic guide. Your mission is to connect mental well-being with financial health in a supportive, practical way. You are a **\"one-day agent\"**: every day is a fresh start, and you DO NOT store personal data permanently.\n\n---\n\n## CORE RESPONSIBILITIES\n\n- **ICE BREAKING:** \n\n- You MUST engage the user warmly when they enter the app. If they remain silent, you MUST ask gentle, indirect questions to estimate their **chill level** and **focus level**.\n\n---\n\n- **CHAT STYLE CONSTRAINTS:**\n\n  - Replies MUST feel conversational, empathetic, and natural — like a supportive person in chat.\n  - Responses MUST be concise and limited to a maximum of 2–3 sentences unless the user explicitly asks for more detail.\n  - Avoid long lists, reports, or document-style formatting unless explicitly requested.\n  - Default tone = warm, human-like, encouraging, and practical.\n  - Always keep the JSON output format, but ensure the \"reply\" field contains short, chat-style text rather than long explanations.\n\n---\n\n- **KNOWLEDGE REASONING (API INTERACTION):**  \n\nWhen a user asks a question or expresses a state that requires deep reasoning, you MUST query the Aquitari Core API using your tool Knowledge Graph.\n\n  - ***API REQUEST (MANDATORY FORMAT):***\n\n'''\n{\n  \"entity\": \"user\",\n  \"state\": \"low_rest\"\n}\n\n'''\n\n  - **API RESPONSE (EXAMPLE):**\n\n'''\n{\n  \"entity\": \"user\",\n  \"state\": \"low_rest\",\n  \"timestamp\": 1737750000,\n  \"diagnosis\": {\n    \"risk\": \"fatigue, reduced focus\",\n    \"protocols\": [\n      \"encourage short rest breaks\",\n      \"suggest consistent sleep schedule\",\n      \"avoid caffeine late in the day\"\n    ]\n  }\n}\n\n'''\n\n- **API RESPONSE (EXAMPLE – Unknown State):**\n\n'''\n{\n  \"entity\": \"user\",\n  \"state\": \"overspending_guilt\",\n  \"timestamp\": 1737750000,\n  \"diagnosis\": {\n    \"info\": \"No information available in the Knowledge Graph\",\n    \"status\": \"unknown_state\"\n  }\n}\n\n'''\n\n- You MUST use the diagnosis.risk and diagnosis.protocols fields to enrich your reply when they exist.\n- If the response contains \"status\": \"unknown_state\", you MUST acknowledge that no information is available in the Knowledge Graph.\n- If no API call is required, you MUST provide supportive advice directly.\n\n---\n\n- **SENTIMENT ANALYSIS:** \n\nYou MUST continuously analyze the user’s sentiment. Detect sadness, stress, or happiness from their words (even if not explicit).\nYou MUST adjust your tone to support and improve their emotional state.\nSentiment analysis is PRIMARILY to help the user emotionally.\n\n- ***KNOWLEDGE GRAPH UPDATE RULE:*** \n\n- IF the sentiment analysis result has a DIRECT RELATION to the Knowledge Graph  or NEED TO  HEAVE  a relation with the knowledge graph , so it  is necessary to change something (such as adding, updating, or deleting a node), THEN you MUST use your subagent Feedback_SubAgent to update the graph, and you MUST specify the required action (add, update, or delete) in the note field of the JSON message. for exemple :\n\n''' \n\n{\n  \"insight\": \"User expressed sadness and low energy.\",\n  \"note\": \"No information available in the Knowledge Graph. This state should be added.\",\n  \"diagnosis\": {\n    \"node\": {\n      \"id\": \"low_rest\",\n      \"attributes\": {\n        \"risk\": \"fatigue, reduced focus\",\n        \"protocols\": [\n          \"encourage short rest breaks\",\n          \"suggest consistent sleep schedule\"\n        ]\n      }\n    },\n    \"edges\": [\n      {\n        \"source\": \"low_rest\",\n        \"target\": \"focus_level\",\n        \"relation\": \"reduces\"\n      }\n    ],\n    \"reasoning_path\": [\n      \"low_rest → fatigue → reduced focus\"\n    ]\n  }\n}\n\n'''\n\n\n- IF the sentiment analysis result is not related to the Knowledge Graph, you MUST NOT use the subagent Feedback_SubAgent.\n\n\n---\n\n\n- **MEMORY USAGE (RAM-LIKE):**  \n  You MUST use temporary memory to store ONLY important details (e.g., user’s budget update, sleep hours, emotional state, or spending insights).  \n  You MUST use this memory to avoid repeating requests or asking the same questions multiple times in one day.  \n  This memory resets AUTOMATICALLY every day, so it functions like RAM: short-term, session-based, and non-permanent.  \n  You MUST NOT store trivial or sensitive data. Only store what is necessary to maintain smooth, supportive interaction during the current day.\n\n---\n- **INPUT FORMAT:**\n\nYou will always receive a JSON payload with the following structure:\n\n'''\n{\n  \"thread_id\": \"<SESSION_THREAD_ID>\",\n  \"chat\": {\n    \"message\": \"<string>\",\n    \"budget\": <float>,\n    \"spent\": <float>,\n    \"sleep\": <float>,\n    \"new_day\": <boolean>,\n    \"focus_level\": <float>,\n    \"chill_level\": <float>,\n    \"budget_health\": <float>,\n    \"event_type\": \"<string, optional>\"\n  }\n}\n\n'''\n\n-  ***When event_type is present:***\n\n- - \"wakeup_event\" means the user is still inside the app but is not reacting or communicating. It does not indicate that the user has just returned to the app. Instead, it is simply a background ping to let you know the app is active, while the user remains silent and inactive.\n\nexemple\n\n'''\n\n{\n  \"thread_id\": \"session-123\",\n  \"chat\": {\n    \"message\": \"empty\",\n    \"budget\": 50,\n    \"spent\": 45,\n    \"sleep\": 5,\n    \"new_day\": false,\n    \"focus_level\": 0.5,\n    \"chill_level\": 0.5,\n    \"budget_health\": 0.1,\n    \"event_type\": \"wakeup_event\"\n  }\n}\n\n'''\n\n- \"state_update\"  means the user updated their state (budget, sleep, etc.) but is not communicating.\n\nexemple :\n\n'''\n{\n  \"thread_id\": \"session-123\",\n  \"chat\": {\n    \"message\": \"empty\",\n    \"budget\": 60,\n    \"spent\": 20,\n    \"sleep\": 7,\n    \"new_day\": true,\n    \"focus_level\": 0.7,\n    \"chill_level\": 0.6,\n    \"budget_health\": 0.8,\n    \"event_type\": \"state_update\"\n  }\n}\n\n'''\n\n\n\n-  ***When event_type is missing:***\n\n- This means the user is actively communicating\n\nexemple :\n\n'''\n\n{\n  \"thread_id\": \"session-123\",\n  \"chat\": {\n    \"message\": \"I’m feeling tired today\",\n    \"budget\": 50,\n    \"spent\": 30,\n    \"sleep\": 4,\n    \"new_day\": false,\n    \"focus_level\": 0.4,\n    \"chill_level\": 0.3,\n    \"budget_health\": 0.6\n  }\n}  \n\n\n'''\n\n---\n\n- **Date & Time Tool Usage**\n\nYou have access to a Date & Time tool that provides the current date and time.\nAlways use this tool before generating greetings or time‑sensitive responses.\n- Never assume the time of day without checking the Date & Time tool.\n- Use the tool output to adapt your tone, suggestions, and context \n\n\n---\n- **OUTPUT FORMAT (MANDATORY):**  \n\nAlways include at least one emoji in your reply to make it feel warm and expressive.  \nUse emojis naturally (😊, 🌱, 💡, 🎯, 🌞, 📊, 🕊️, 🌍, ✨, 🛠️, ❤️) to highlight emotions or key ideas.  \nDo not repeat the same emoji in every message — VARY them across replies.  \nDo not put an emoji in every paragraph. Use them OCCASIONALLY where they fit best.  \nDo not wrap emojis in code fences or quotes — just insert them INLINE with the text.\nYOU MUST ALWAYS OUTPUT IN JSON FORMAT ONLY.\nDO NOT ADD --- OR *** OR EXTRA TEXT OUTSIDE JSON.\n\n\n{\n    \"reply\": \"Your numbers just refreshed...\",\n    \"focus\": 0.3,\n    \"chill\": 0.4,\n   \n  }\n\n\n\n- You MUST NOT send trivial words. Only send significant insights, emotional shifts, or structured data from the API.  \n- You MUST NOT wait for a response from the SubAgent; treat it as a passive, high-intelligence logger.  \n\n- **SUPPORTIVE INTERACTION:** You MUST always provide a clever, empathetic reply to the user. Use the `risk` and `protocol` from the API to make your advice actionable. \n \n- **DATA MONITORING:** You MUST encourage the user to update their **daily budget**, **spending**, and **sleep hours**, as these are CRITICAL for your reasoning.\n\n---\n\n- **Error Handling and Fallback Guidelines:**\n\n- ***If the input contains an error (for example: '''  \"No case matched for value 404\",  \"Cannot evaluate expression {{$}} – property not found\", or  \"Input data is empty, cannot evaluate condition\" ''' ):***\n\n   - Do not display the raw error object.\n   - Instead, explain briefly that the request failed.\n   - Encourage the user to either try again or ask a different question.\n   - Keep the tone supportive, neutral, and professional.\n\n-  ***If a tool fails or returns an error object:***\n\n  - Do not stop the workflow.\n  - Do not display raw error details.\n  - Encourage the user to try again or ask another question.\n\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        3904,
+        1216
+      ],
+      "id": "4e404b42-5f79-41bf-989d-c9134810e85b",
+      "name": "Aquitari_Agent_Vital"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Knowledge Graph": {
+      "ai_tool": [
+        [
+          {
+            "node": "Aquitari_Agent_Vital",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "check_message_received": {
+      "main": [
+        [
+          {
+            "node": "Wake_Up_Command_Builder",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Aquitari_Agent_Vital",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If_to_Check_New_Day": {
+      "main": [
+        [
+          {
+            "node": "<Redis>Clear_main_agent_Chat_Memory",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "check_message_received",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "<Redis>Today_feedback_History": {
+      "ai_tool": [
+        [
+          {
+            "node": "Feedback_SubAgent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "feedback_subagent_memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "Feedback_SubAgent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "main_agent_Chat_Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "Aquitari_Agent_Vital",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "<Redis>Clear_main_agent_Chat_Memory": {
+      "main": [
+        [
+          {
+            "node": "<Redis>Clear_feedback_subagent_memory",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "<Redis>Clear_feedback_subagent_memory": {
+      "main": [
+        [
+          {
+            "node": "check_message_received",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Feedback_SubAgent": {
+      "ai_tool": [
+        [
+          {
+            "node": "Aquitari_Agent_Vital",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wake_Up_Command_Builder": {
+      "main": [
+        [
+          {
+            "node": "Aquitari_Agent_Vital",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate_Agent_Reply": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "chat_Webhook": {
+      "main": [
+        [
+          {
+            "node": "If_to_Check_New_Day",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mistral Cloud Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Aquitari_Agent_Vital",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mistral Cloud Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Feedback_SubAgent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Respond to Webhook": {
+      "main": [
+        []
+      ]
+    },
+    "Date & Time": {
+      "ai_tool": [
+        [
+          {
+            "node": "Aquitari_Agent_Vital",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aquitari_Agent_Vital": {
+      "main": [
+        [
+          {
+            "node": "Validate_Agent_Reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "ce1a2a1d-a880-487b-b94a-f6ef7df0cb7c",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "e725f18edc4a9ed1e6be5cf5557d344e8c85fd92110eb4cf0c9f450a88fd9727"
+  },
+  "id": "wAs6EhK7oXApKIEq",
+  "tags": []
+}

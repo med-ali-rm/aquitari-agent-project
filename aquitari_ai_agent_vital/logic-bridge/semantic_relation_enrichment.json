@@ -1,0 +1,176 @@
+{
+  "name": "semantic_relation_enrichment",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "semantic_relation",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "9ab9fbad-b7ab-48cc-b4db-437418c26911",
+      "name": "relation_resolver_webhook",
+      "webhookId": "a4f9fbb1-1f1b-4a62-9fa1-2dd3a88b2a6a"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.body }}",
+        "options": {
+          "systemMessage": "You are a relation classifier agent. \nYou must use your reasoning tool (\"think\") to analyze carefully and determine the most accurate relation type between two nodes. \nDo not guess — apply logical reasoning to the node descriptions before deciding.\n\nGiven two nodes from a knowledge graph and their descriptions, determine the most accurate relation type between them. \nChoose a concise, domain‑specific relation (e.g., CAUSES, EXACERBATES, MITIGATES, PROTECTS, DISRUPTS, ISOLATES_FROM). \nReturn only a JSON object with the relation field, no explanations.\n\n# Input Example:\n\n'''\n\n{\n  \"source\": \"executive_fatigue\",\n  \"target\": \"overwhelming_financial_stress_collapse\",\n  \"question\": \"What is the relation between executive_fatigue and overwhelming_financial_stress_collapse?\"\n}\n\n'''\n\n# Output Example:\n\n\n{ \"relation\": \"EXACERBATES\" }\n\n### YOU MUST RETURN A VALIDE JSON "
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        208,
+        0
+      ],
+      "id": "eb6053ca-3c06-4972-820e-c13637881721",
+      "name": "relation_classifier_agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        560,
+        0
+      ],
+      "id": "d12e7094-7cf0-405b-bdca-02dd39c8f213",
+      "name": "Respond_to_relation_resolver_webhook"
+    },
+    {
+      "parameters": {
+        "model": "mistral-large-latest",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatMistralCloud",
+      "typeVersion": 1,
+      "position": [
+        208,
+        176
+      ],
+      "id": "4449b391-70fe-464c-a65a-104607eeb8c0",
+      "name": "Mistral Cloud Chat Model",
+      "credentials": {
+        "mistralCloudApi": {
+          "id": "8O1DGNO6ZhYss6J7",
+          "name": "Mistral Cloud account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "description": "Use the tool to think about something. It will not obtain new information or change the database, but just append the thought to the log. Use it when complex reasoning "
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolThink",
+      "typeVersion": 1.1,
+      "position": [
+        352,
+        192
+      ],
+      "id": "02f3df14-270f-4cb9-8d6d-34bc055b575a",
+      "name": "Think"
+    },
+    {
+      "parameters": {
+        "content": "",
+        "height": 352,
+        "width": 800,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -64,
+        -32
+      ],
+      "id": "7fcc0edb-51f9-4da2-a35c-7f37ff07172f",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "### description \nThis workflow ensures that every new connection added to the Adaptive Knowledge Graph is accurate and meaningful. It uses a reasoning step (“think”) to carefully analyze the relationship between two nodes before committing it to the graph.\n",
+        "height": 112,
+        "width": 800,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -64,
+        -144
+      ],
+      "id": "9fbede34-e2cd-4113-8b19-8f1137c1219d",
+      "name": "Sticky Note1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "relation_resolver_webhook": {
+      "main": [
+        [
+          {
+            "node": "relation_classifier_agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "relation_classifier_agent": {
+      "main": [
+        [
+          {
+            "node": "Respond_to_relation_resolver_webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mistral Cloud Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "relation_classifier_agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Think": {
+      "ai_tool": [
+        [
+          {
+            "node": "relation_classifier_agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "42bd0e3c-3b03-4865-823a-6761090714ae",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "e725f18edc4a9ed1e6be5cf5557d344e8c85fd92110eb4cf0c9f450a88fd9727"
+  },
+  "id": "1dLS2ZX45tl8Joa_SQolp",
+  "tags": []
+}
