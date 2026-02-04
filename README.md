@@ -82,8 +82,10 @@ redis-server
   - Open your n8n instance.  
   - Import the two workflow JSON files provided in the `workflows/` folder.  
 
-- Set LLM credentials  
-  - Configure the API key or credentials for your chosen LLM.  
+- Set LLM credentials
+  - Configure the API key or credentials for your chosen LLM.
+    
+-Set Redis credentials
 
 - Publish workflows 
   - Make sure they are active.  
