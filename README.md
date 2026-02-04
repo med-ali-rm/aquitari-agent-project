@@ -78,25 +78,33 @@ redis-server
 
 4. **Import n8n workflows**
 
--Import workflows:
-   - Open your n8n instance.
-   - Import the two workflow JSON files provided in the `workflows/` folder.
-     
--Set LLM credentials : Configure the API key or credentials for your chosen LLM 
+- Import workflows
+  - Open your n8n instance.  
+  - Import the two workflow JSON files provided in the `workflows/` folder.  
 
--Publish them so they are active.
+- Set LLM credentials  
+  - Configure the API key or credentials for your chosen LLM.  
 
--Configure webhook URLs:
-   - Copy the **production webhook URL** for each of the two workflows.
-   - Paste these URLs into the `.env` file under the appropriate variables.
+- Publish workflows 
+  - Make sure they are active.  
+
+- Configure webhook URLs
+  - Copy the **production webhook URL** for each of the two workflows.  
+  - Paste these URLs into the `.env` file under the appropriate variables.  
+
+-Enable Opik Observability
+   -configure Opik with your n8n instance.  
+
 
 5. **Modify environment variables**
 
-- Open the existing .env file included in the repo.
+-Rename the file:
+   - Change the name of `.env.example` → `.env`
+
 - Update the values for:
-- REDIS_HOST, REDIS_PORT, REDIS_DB
-- N8N_WEBHOOK_URL
-- OPIK_API_KEY
+   - REDIS_HOST, REDIS_PORT, REDIS_DB
+   - N8N_WEBHOOK_URL
+   - OPIK_API_KEY
 
 
 6. **Run the agent**
